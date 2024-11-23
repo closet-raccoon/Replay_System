@@ -97,21 +97,3 @@ obs.obs_frontend_add_event_callback(function(...)
 
     end
 end)
-
-
--- secret settins screen im looking at adding, feel free to look at and maybe get it working on your own
-
--- function script_properties()
---     local settings = obs.obs_properties_create()
-
---     local source_option = obs.obs_properties_add_list(settings, "source", "Source", obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
---     local source_list = obs.obs_enum_sources() or error("Couldnt retrive source list")
-
---     for k, v in ipairs(source_list) do
---         local name = obs.obs_source_get_name(v)
-        
---         obs.obs_property_list_add_string(source_option, name, name)
---     end
-
---     return settings
--- end
