@@ -17,7 +17,7 @@ local curent_title = "unknown" -- this is the default for when obs hasn't bound 
     See https://docs.obsproject.com/reference-sources#source-specific-signals
 ]]
 
-if false then obslua = require("obslua") end  -- visual studio moment
+if false then obslua = require("../lua_doc_builder/obslua") end  -- visual studio moment
 local obs = obslua or error("Not loaded with obs")
 
 -- Defining and finding out our source based on its name. This is much easier then pulling the currently active one.
@@ -40,7 +40,10 @@ local obs = obslua or error("Not loaded with obs")
     local function hook_signal_function(...)
         local args = {...}
         print("Signal called, changing curent_title")
-        curent_title = obs.calldata_string(args[1],"title")
+        curent_title =
+            obs.calldata_string(args[1],"title") -- Ask obs to give us the title returned in the userdata type
+            :gsub("%d",""):gsub("%.","") -- removing all dots and digets
+            :reverse():gsub("%s+",""):reverse(); -- and trailling spaces
     end
     obs.signal_handler_connect(source_specific_handler,"hooked",hook_signal_function)
 
@@ -51,21 +54,14 @@ obs.obs_frontend_add_event_callback(function(...)
     if event[1] == obs.OBS_FRONTEND_EVENT_REPLAY_BUFFER_SAVED then
 
         -- Get last replay's path
+            local old_path = obs.obs_frontend_get_current_record_output_path()
             local replay_location = obs.obs_frontend_get_last_replay()
             print(replay_location)
             print(curent_title)
-
-        -- Parse path
-            local s = replay_location:reverse():find("/")
-            if not s and not s > 1 then
-                error("Couldn't parse output path?")
-                return
-            end
-            local old_path = replay_location:reverse():sub(s or 1):reverse()
-            print(old_path)
+            obs.obs_frontend_get_recording_output()
 
         --Structure and execute command
-            local new_path = ([["]]..old_path..curent_title..[[/"]])
+            local new_path = ([["]]..old_path.."/"..curent_title..[[/"]])
             
             if os.getenv("os") == "Windows_NT" then
                 print("Windows")
@@ -74,7 +70,7 @@ obs.obs_frontend_add_event_callback(function(...)
                 [[move "]]..
                 -- We need to gsub out all the unix style forward slashes "/" to replace them with windows terible back slash dir system "\"
                 replay_location:gsub("/","\\")..
-                " ".. -- whitespace my beloved
+                "\" ".. -- whitespace my beloved
                 new_path:gsub("/","\\");
                 
                 -- Create all the dir required, this just silently fails if the exsist. Windows also does this recursively by default.
@@ -86,7 +82,7 @@ obs.obs_frontend_add_event_callback(function(...)
                 local command =
                     [[mv "]]..
                     replay_location..
-                    " ".. -- whitespace my beloved
+                    "\" ".. -- whitespace my beloved
                     new_path;
 
                 -- Create all the dir required, this just silently fails if the exsist.
