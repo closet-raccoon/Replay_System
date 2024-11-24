@@ -40,10 +40,15 @@ local obs = obslua or error("Not loaded with obs")
     local function hook_signal_function(...)
         local args = {...}
         print("Signal called, changing curent_title")
-        curent_title =
-            obs.calldata_string(args[1],"title") -- Ask obs to give us the title returned in the userdata type
+        curent_title = obs.calldata_string(args[1],"title") -- Ask obs to give us the title returned in the userdata type
+        
+        -- See if the returned value as dots in it, this will remove version numbers from games that append them to the game name as long as it has at least one dot
+        if curent_title:find(".") then
+            curent_title = curent_title
             :gsub("%d",""):gsub("%.","") -- removing all dots and digets
             :reverse():gsub("%s+",""):reverse(); -- and trailling spaces
+        end
+            
     end
     obs.signal_handler_connect(source_specific_handler,"hooked",hook_signal_function)
 
