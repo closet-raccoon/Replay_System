@@ -91,7 +91,7 @@ obs.obs_frontend_add_event_callback(function(...)
                     new_path;
 
                 -- Create all the dir required, this just silently fails if the exsist.
-                os.execute("mkdir -r "..new_path)
+                os.execute("mkdir -p "..new_path)
                 print("Executing command: "..command)  -- For debuging
                 os.execute(command)
             end
